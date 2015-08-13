@@ -256,22 +256,8 @@ extends   AbstractDKIM
     protected static function _signatureIsValid($pub, $sig, $str, $hash='sha1') {
         // Convert key back into PEM format
         $key = sprintf("-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----", wordwrap($pub, 64, "\n", true));
-        
-        // prefer Crypt_RSA
-        // http://phpseclib.sourceforge.net
-        # [DG]: X3 how Crypt_RSA works, skip
-        if (class_exists('Crypt_RSA')) {
-            $rsa = new Crypt_RSA();
-            $rsa->setHash($hash);
-            $rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
-            $rsa->loadKey($pub);
-            return $rsa->verify($str, base64_decode($sig));
-        } else {
-            #$pubkeyid = openssl_get_publickey($key);
-            $signature_alg = constant('OPENSSL_ALGO_'.strtoupper($hash));
-            return openssl_verify($str, base64_decode($sig), $key, $signature_alg);
-        }
-        
+
+        $signature_alg = constant('OPENSSL_ALGO_'.strtoupper($hash));
+        return openssl_verify($str, base64_decode($sig), $key, $signature_alg);
     }
-    
 }

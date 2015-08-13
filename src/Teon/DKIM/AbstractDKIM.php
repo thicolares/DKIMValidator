@@ -6,19 +6,6 @@ namespace Teon\DKIM;
 
 
 
-/**
- * @see phpseclib/Crypt/RSA
- */
-// require_once 'phpseclib/Crypt/RSA.php';
-
-/**
- * @see phpseclib/Crypt/Hash
- * @link http://phpseclib.sourceforge.net
- */
-// require_once 'phpseclib/Crypt/Hash.php';
-
-define('PHPSECLIB_USE_EXCEPTIONS', true);
-
 abstract class AbstractDKIM {
     
     /**
@@ -231,16 +218,8 @@ abstract class AbstractDKIM {
      *
      */
     protected static function _hashBody($body, $method='sha1') {
-        
-        // prefer to use phpseclib
-        // http://phpseclib.sourceforge.net
-        if (class_exists('Crypt_Hash')) {
-            $hash = new Crypt_Hash($method);
-            return base64_encode($hash->hash($body));
-        } else {
-            // try standard PHP hash function
-            return base64_encode(hash($method, $body, true));
-        }
-        
+
+        return base64_encode(hash($method, $body, true));
+
     }
 }

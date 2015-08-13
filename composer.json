@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-	"phpseclib/phpseclib": ">=0.3.6"
+        "ext-openssl": "*"
     },
     "suggest": {
         "angrychimp/php-dkim": "Original, psr-0 compatible php-dkim package"
