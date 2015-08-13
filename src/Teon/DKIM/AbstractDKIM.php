@@ -197,10 +197,15 @@ abstract class AbstractDKIM {
             return (string)$this->_params['body'];
         }
         
-        $lines = explode("\r\n", $this->_raw);
+        // Do not explode by \r\n, rather do it by \n and strip \r from line endif if it is found - see comment below
+        $lines = explode("\n", $this->_raw);
         // Jump past all the headers
         $on = false;
         while ($line = array_shift($lines)) {
+            // Remove trailing carriage-return if present
+            // It might be present if emails are read from Unix maildirs directly instead of via IMAP/POP3
+            $line = preg_replace('/\r$/', '', $line);
+
             if ($on === true && $line != '') {
                 break;
             }

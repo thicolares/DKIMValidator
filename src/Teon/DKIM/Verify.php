@@ -240,6 +240,12 @@ extends   AbstractDKIM
             $parts = explode(';', trim($record['txt']));
             $record = array();
             foreach ($parts as $part) {
+                // Last record is empty if there is trailing semicolon
+                $part = trim($part);
+                if (empty($part)) {
+                    continue;
+                }
+
                 list($key, $val) = explode('=', trim($part), 2);
                 $record[$key] = $val;
             }
