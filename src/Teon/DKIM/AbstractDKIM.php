@@ -1,5 +1,11 @@
 <?php
 
+
+
+namespace Teon\DKIM;
+
+
+
 /**
  * @see phpseclib/Crypt/RSA
  */
@@ -13,7 +19,7 @@
 
 define('PHPSECLIB_USE_EXCEPTIONS', true);
 
-abstract class DKIM {
+abstract class AbstractDKIM {
     
     /**
      *
@@ -38,13 +44,13 @@ abstract class DKIM {
      *
      * @param  string $rawMessage
      * @return DKIM
-     * @throws DKIM_Exception
+     * @throws Exception
      */
     public function __construct($rawMessage='', $params=array()) {
         
         $this->_raw = $rawMessage;
         if (!$this->_raw) {
-            throw new DKIM_Exception('No message content provided');
+            throw new Exception('No message content provided');
         }
         
         $this->_params = $params;
@@ -61,12 +67,12 @@ abstract class DKIM {
      * @param  array $headers
      * @param  string $style
      * @return string
-     * @throws DKIM_Exception
+     * @throws Exception
      */
     protected function _canonicalizeHeader($headers=array(), $style="simple") {
         $headers = (array)$headers;
         if (sizeof($headers) == 0) {
-            throw new DKIM_Exception("Attempted to canonicalize empty header array");
+            throw new Exception("Attempted to canonicalize empty header array");
         }
         
         $cHeader = '';
@@ -106,7 +112,7 @@ abstract class DKIM {
      * @param  string $style
      * @param  int $length
      * @return string
-     * @throws DKIM_Exception
+     * @throws Exception
      */
     protected function _canonicalizeBody($style='simple', $length=-1) {
         
@@ -238,6 +244,3 @@ abstract class DKIM {
         
     }
 }
-
-
-class DKIM_Exception extends Exception { }

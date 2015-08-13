@@ -1,11 +1,14 @@
 <?php
 
-/**
- * @see DKIM
- */
-require_once __DIR__.'/../DKIM.php';
 
-class DKIM_Verify extends DKIM {
+
+namespace Teon\DKIM;
+
+
+
+class     Verify
+extends   AbstractDKIM
+{
     
     /**
      *
@@ -17,7 +20,7 @@ class DKIM_Verify extends DKIM {
      * Validates all present DKIM signatures
      *
      * @return array
-     * @throws DKIM_Exception
+     * @throws Exception
      */
     public function validate() {
         

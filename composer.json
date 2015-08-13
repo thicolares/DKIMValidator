@@ -1,18 +1,26 @@
 {
-    "name": "angrychimp/php-dkim",
-    "description": "Finally, a PHP5 class for not just signing, but _verifying_ DKIM signatures.",
+    "name": "teon/dkim",
+    "description": "Update of angrychimp/php-dkim package. License is faked as 'proprietary' until original author declares license for his work. Using 'proprietary' license specification does not imply any ownership of original code.",
+    "license": "proprietary",
     "authors": [
         {
             "name": "angrychimp",
             "email": "rk@angrychimp.net"
+        },
+        {
+            "name": "Bostjan Skufca",
+            "email": "bostjan@teon.si"
         }
     ],
     "require": {
 	"phpseclib/phpseclib": ">=0.3.6"
     },
+    "suggest": {
+        "angrychimp/php-dkim": "Original, psr-0 compatible php-dkim package"
+    },
     "autoload": {
-	"psr-0": {
-		"DKIM": "./"
+	"psr-4": {
+		"Teon\\DKIM\\": "src/Teon/DKIM/"
 	}
     }
 }
