@@ -17,6 +17,31 @@ extends   AbstractDKIM
     private $_publicKeys;
     
     /**
+     * Validation wrapper - return boolean true/false about validation success/failure
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function validateBoolean() {
+
+        // Executte original validation method
+        $res = $this->validate();
+
+        // Only return true in this case
+        if (
+            true
+            && (count($res) == 1)
+            && (count($res[0]) == 1)
+            && ($res[0][0]['status'] == 'pass' )
+        ) {
+            return true;
+        }
+
+        // Return failure on all other occasions
+        return false;
+    }
+
+    /**
      * Validates all present DKIM signatures
      *
      * @return array
