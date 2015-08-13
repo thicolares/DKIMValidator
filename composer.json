@@ -13,7 +13,8 @@
         }
     ],
     "require": {
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "ext-hash": "*"
     },
     "suggest": {
         "angrychimp/php-dkim": "Original, psr-0 compatible php-dkim package"
