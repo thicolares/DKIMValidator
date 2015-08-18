@@ -6,7 +6,7 @@ namespace Teon\DKIM;
 
 
 
-class     Verify
+class     Validator
 extends   AbstractDKIM
 {
     
