@@ -1,14 +1,14 @@
 {
     "name": "teon/dkim",
-    "description": "Update of angrychimp/php-dkim package. License is faked as 'proprietary' until original author declares license for his work. Using 'proprietary' license specification does not imply any ownership of original code.",
-    "license": "proprietary",
+    "description": "Update of angrychimp/php-dkim package.",
+    "license": "MIT",
     "authors": [
         {
             "name": "angrychimp",
             "email": "rk@angrychimp.net"
         },
         {
-            "name": "Bostjan Skufca",
+            "name": "Teon d.o.o. - Bostjan Skufca",
             "email": "bostjan@teon.si"
         }
     ],
@@ -20,8 +20,8 @@
         "angrychimp/php-dkim": "Original, psr-0 compatible php-dkim package"
     },
     "autoload": {
-	"psr-4": {
-		"Teon\\DKIM\\": "src/Teon/DKIM/"
-	}
+        "psr-4": {
+                "Teon\\DKIM\\": "src/Teon/DKIM/"
+        }
     }
 }
