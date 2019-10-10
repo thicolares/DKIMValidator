@@ -1,27 +1,44 @@
 {
-    "name": "teon/dkim",
-    "description": "Update of angrychimp/php-dkim package.",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "angrychimp",
-            "email": "rk@angrychimp.net"
-        },
-        {
-            "name": "Teon d.o.o. - Bostjan Skufca",
-            "email": "bostjan@teon.si"
-        }
-    ],
-    "require": {
-        "ext-openssl": "*",
-        "ext-hash": "*"
+  "name": "phpmailer/dkimvalidator",
+  "description": "A DKIM signature validator in PHP.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "angrychimp",
+      "email": "rk@angrychimp.net"
     },
-    "suggest": {
-        "angrychimp/php-dkim": "Original, psr-0 compatible php-dkim package"
+    {
+      "name": "Teon d.o.o. - Bostjan Skufca",
+      "email": "bostjan@teon.si"
     },
-    "autoload": {
-        "psr-4": {
-                "Teon\\DKIM\\": "src/Teon/DKIM/"
-        }
+    {
+      "name": "Marcus Bointon",
+      "email": "phpmailer@synchromedia.co.uk"
     }
+  ],
+  "require": {
+    "php": ">=7.2.0",
+    "ext-openssl": "*",
+    "ext-hash": "*",
+    "ext-mbstring": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "PHPMailer\\DKIMValidator\\": "src/"
+    }
+  },
+  "scripts": {
+    "lint": "php-cs-fixer fix -v",
+    "beautify": "phpcbf --standard=PSR12 src/*",
+    "test:lint": "php-cs-fixer fix -v --dry-run src/",
+    "test:insights": "phpinsights analyse --min-quality=100 src/",
+    "test:unit": "phpunit",
+    "test:types": "phpstan analyse src/",
+    "test": [
+      "@test:lint",
+      "@test:insights",
+      "@test:unit",
+      "@test:types"
+    ]
+  }
 }
