@@ -8,36 +8,39 @@ abstract class DKIM
 {
     /**
      * We use this a lot, so make it a constant
-     * @type string
      */
     public const CRLF = "\r\n";
 
     /**
      * The original, unaltered message
-     * @type string
+     *
+     * @var string
      */
     protected $raw = '';
 
     /**
      * Message headers, as a string with CRLF line breaks
-     * @type string
+     *
+     * @var string
      */
     protected $headers = '';
 
     /**
      * Message headers, parsed into an array
-     * @type array
+     *
+     * @var array
      */
     protected $parsedHeaders = [];
 
     /**
      * Message body, as a string with CRLF line breaks
-     * @type string
+     *
+     * @var string
      */
     protected $body = '';
 
     /**
-     * @type array
+     * @var array
      */
     protected $params = [];
 
@@ -54,7 +57,7 @@ abstract class DKIM
         //Ensure all processing uses UTF-8
         mb_internal_encoding('UTF-8');
         $this->raw = $rawMessage;
-        if (!$this->raw) {
+        if (! $this->raw) {
             throw new DKIMException('No message content provided');
         }
         //Normalize line breaks to CRLF
@@ -76,6 +79,7 @@ abstract class DKIM
      * @param string $style 'relaxed' or 'simple'
      *
      * @return string
+     *
      * @throws DKIMException
      */
     protected function canonicalizeHeaders(array $headers, string $style = 'relaxed'): string
@@ -97,7 +101,10 @@ abstract class DKIM
                     //Lowercase field name
                     $name = strtolower(trim($name));
 
-                    //Unfold header values and collapse whitespace
+                    //Unfold header value
+                    $val = preg_replace('/\r\n[ \t]+/', ' ', $val);
+
+                    //Collapse whitespace to a single space
                     $val = trim(preg_replace('/\s+/', ' ', $val));
 
                     $new[] = "$name:$val";
@@ -153,6 +160,7 @@ abstract class DKIM
      * @param string $format
      *
      * @return array
+     *
      * @throws DKIMException
      */
     protected function getHeadersNamed(string $headerName, string $format = 'raw'): array
@@ -214,6 +222,7 @@ abstract class DKIM
      * @param string $headers
      *
      * @return array
+     *
      * @throws DKIMException
      */
     protected function parseHeaders(string $headers): array
@@ -278,6 +287,7 @@ abstract class DKIM
     {
         return mb_decode_mimeheader($header);
     }
+
     /**
      * Return the message body.
      *

@@ -8,7 +8,7 @@ class Validator extends DKIM
 {
 
     /**
-     * @type array
+     * @var array
      */
     private $publicKeys = [];
 
@@ -63,25 +63,20 @@ class Validator extends DKIM
             // http://tools.ietf.org/html/rfc4871#section-6.1.1
             $required = ['v', 'a', 'b', 'bh', 'd', 'h', 's'];
             foreach ($required as $tagIndex) {
-                if (!array_key_exists($tagIndex, $dkimTags)) {
+                if (! array_key_exists($tagIndex, $dkimTags)) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
                         'reason' => "Signature missing required tag: $tagIndex",
                     ];
-                    continue;
                 }
             }
-            // abort if we have any errors at this point
-            if (!empty($output[$signatureIndex])) {
-                continue;
-            }
 
-            if ((int)$dkimTags['v'] !== 1) {
+            //Validate DKIM version number
+            if ((int) $dkimTags['v'] !== 1) {
                 $output[$signatureIndex][] = [
                     'status' => 'PERMFAIL',
                     'reason' => 'Incompatible DKIM version: ' . $dkimTags['v'],
                 ];
-                continue;
             }
 
             //Validate canonicalization algorithms for header and body
@@ -91,37 +86,33 @@ class Validator extends DKIM
                     'status' => 'PERMFAIL',
                     'reason' => 'Unknown header canonicalization algorithm: ' . $headerCA,
                 ];
-                continue;
             }
             if ($bodyCA !== 'relaxed' && $bodyCA !== 'simple') {
                 $output[$signatureIndex][] = [
                     'status' => 'PERMFAIL',
                     'reason' => 'Unknown body canonicalization algorithm: ' . $bodyCA,
                 ];
-                continue;
             }
+
             //Canonicalize body
             $canonicalBody = $this->canonicalizeBody($this->body, $bodyCA);
 
             //Validate optional body length tag
-            //If this is present, the canonical body should be *at least* this long
+            //If this is present, the canonical body should be *at least* this long,
             //though it may be longer
             if (array_key_exists('l', $dkimTags)) {
                 $bodyLength = strlen($canonicalBody);
-                if ((int)$dkimTags['l'] > $bodyLength) {
+                if ((int) $dkimTags['l'] > $bodyLength) {
                     $output[$signatureIndex][] = [
-                        'status' => 'fail',
-                        'reason' => 'Body length mismatch: ' . $dkimTags['l'] . '/' . $bodyLength,
+                        'status' => 'PERMFAIL',
+                        'reason' => 'Body too short: ' . $dkimTags['l'] . '/' . $bodyLength,
                     ];
                 }
             }
 
             //Ensure the user identifier ends in the signing domain
-            if (
-                array_key_exists('i', $dkimTags) && !substr(
-                    $dkimTags['i'],
-                    -strlen($dkimTags['d'])
-                ) === $dkimTags['d']
+            if (array_key_exists('i', $dkimTags) &&
+                substr($dkimTags['i'], -strlen($dkimTags['d'])) !== $dkimTags['d']
             ) {
                 $output[$signatureIndex][] = [
                     'status' => 'PERMFAIL',
@@ -130,7 +121,8 @@ class Validator extends DKIM
             }
 
             //Ensure the signature includes the From field
-            if (array_key_exists('h', $dkimTags) && stripos($dkimTags['h'], 'From') === false) {
+            if (array_key_exists('h', $dkimTags) &&
+                stripos($dkimTags['h'], 'From') === false) {
                 $output[$signatureIndex][] = [
                     'status' => 'PERMFAIL',
                     'reason' => 'From header not included in signed header list: ' . $dkimTags['h'],
@@ -139,26 +131,32 @@ class Validator extends DKIM
 
             //Validate and check expiry time
             if (array_key_exists('x', $dkimTags)) {
-                if ((int)$dkimTags['x'] < (int)$dkimTags['t']) {
-                    $output[$signatureIndex][] = [
-                        'status' => 'PERMFAIL',
-                        'reason' => 'Expiry time is before signature time.',
-                    ];
-                } elseif ((int)$dkimTags['x'] < time()) {
+                if ((int) $dkimTags['x'] < time()) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
                         'reason' => 'Signature has expired.',
                     ];
                 }
+                if ((int) $dkimTags['x'] < (int) $dkimTags['t']) {
+                    $output[$signatureIndex][] = [
+                        'status' => 'PERMFAIL',
+                        'reason' => 'Expiry time is before signature time.',
+                    ];
+                }
             }
 
-            //Get the Public Key from DNS
-            // (note: may retrieve more than one key)
             //The 'q' tag may be empty - fall back to default if it is
-            if (empty($dkimTags['q'])) {
+            if (! array_key_exists('q', $dkimTags) || $dkimTags['q'] === '') {
                 $dkimTags['q'] = 'dns/txt';
             }
 
+            //Abort if we have any errors at this point
+            if (count($output) > 0) {
+                continue;
+            }
+
+            //Fetch public keys from DNS using the domain and selector from the signature
+            //May return multiple keys
             [$qType, $qFormat] = explode('/', $dkimTags['q'], 2);
             if ($qType . '/' . $qFormat === 'dns/txt') {
                 $dnsKeys = self::fetchPublicKeys($dkimTags['d'], $dkimTags['s']);
@@ -189,7 +187,8 @@ class Validator extends DKIM
                 }
             }
             //Need to remove the `b` value from the signature header before checking the hash
-            $headersToCanonicalize[] = 'DKIM-Signature: ' . preg_replace('/b=(.*?)(;|$)/s', 'b=$2', $signature);
+            $headersToCanonicalize[] = 'DKIM-Signature: ' .
+                preg_replace('/b=(.*?)(;|$)/s', 'b=$2', $signature);
 
             [$alg, $hash] = explode('-', $dkimTags['a']);
 
@@ -213,7 +212,8 @@ class Validator extends DKIM
                 if (array_key_exists('v', $publicKey) && $publicKey['v'] !== 'DKIM' . $dkimTags['v']) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
-                        'reason' => "Public key version does not match signature version ({$dkimTags['d']} key #$keyIndex)",
+                        'reason' => 'Public key version does not match signature' .
+                            " version ({$dkimTags['d']} key #$keyIndex)",
                     ];
                 }
 
@@ -221,7 +221,8 @@ class Validator extends DKIM
                 if (array_key_exists('h', $publicKey) && $publicKey['h'] !== $hash) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
-                        'reason' => "Public key hash algorithm does not match signature hash algorithm ({$dkimTags['d']} key #$keyIndex)",
+                        'reason' => 'Public key hash algorithm does not match signature' .
+                            " hash algorithm ({$dkimTags['d']} key #$keyIndex)",
                     ];
                 }
 
@@ -229,7 +230,8 @@ class Validator extends DKIM
                 if (array_key_exists('k', $publicKey) && $publicKey['k'] !== $alg) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
-                        'reason' => "Public key type does not match signature key type ({$dkimTags['d']} key #$keyIndex)",
+                        'reason' => 'Public key type does not match signature' .
+                            " key type ({$dkimTags['d']} key #$keyIndex)",
                     ];
                 }
 
@@ -245,20 +247,27 @@ class Validator extends DKIM
                 // @TODO check t= flags
 
                 # Check that the hash algorithm is available in openssl
-                if (!in_array($hash, openssl_get_md_methods(true), true)) {
+                if (! in_array($hash, openssl_get_md_methods(true), true)) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
-                        'reason' => " Signature algorithm $hash is not available for openssl_verify(), key #$keyIndex)",
+                        'reason' => "Signature algorithm $hash is not available" .
+                            " for openssl_verify(), key #$keyIndex)",
                     ];
                     continue;
                 }
                 // Validate the signature
-                $validationResult = self::validateSignature($publicKey['p'], $dkimTags['b'], $canonicalHeaders, $hash);
+                $validationResult = self::validateSignature(
+                    $publicKey['p'],
+                    $dkimTags['b'],
+                    $canonicalHeaders,
+                    $hash
+                );
 
-                if (!$validationResult) {
+                if (! $validationResult) {
                     $output[$signatureIndex][] = [
                         'status' => 'PERMFAIL',
-                        'reason' => "DKIM signature did not verify ({$dkimTags['d']}/{$dkimTags['s']} key #$keyIndex)",
+                        'reason' => 'DKIM signature did not verify ' .
+                            "({$dkimTags['d']}/{$dkimTags['s']} key #$keyIndex)",
                     ];
                 } else {
                     $output[$signatureIndex][] = [
