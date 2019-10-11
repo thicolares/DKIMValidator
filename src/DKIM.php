@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PHPMailer\DKIMValidator;
 
 abstract class DKIM
