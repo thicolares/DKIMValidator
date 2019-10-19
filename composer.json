@@ -32,7 +32,8 @@
   },
   "autoload": {
     "psr-4": {
-      "PHPMailer\\DKIMValidator\\": "src/"
+      "PHPMailer\\DKIMValidator\\": "src/",
+      "PHPMailer\\DKIMValidator\\Tests\\": "tests/"
     }
   },
   "scripts": {
